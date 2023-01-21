@@ -1,4 +1,6 @@
+import json
 import socket
+import time
 
 
 class Client:
@@ -17,5 +19,5 @@ class Client:
                 if command == 'stop':
                     break
 
-                server_response = s.recv(1024).decode()
+                server_response = json.loads(s.recv(1024).decode())
                 print(f"{server_response}")
