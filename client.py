@@ -9,16 +9,19 @@ class CommandManager:
 
     @classmethod
     def send(cls, command, s):
-        if command != 'signup' and command != 'login':
+        if command.split()[0] != 'signup' and command.split()[0] != 'login':
             if cls.username and cls.password:
-                command += f' {cls.username} {cls.password}'
+                split = command.split()
+                split.insert(1, cls.username)
+                split.insert(2, cls.password)
+                command = ' '.join(split)
         s.sendall(bytes(command, 'utf-8'))
         cls.last_command = command
 
     @classmethod
     def receive(cls, s):
         server_response = json.loads(s.recv(1024).decode())
-        if server_response == 'Logged in.':
+        if 'Logged in' in server_response:
             cls.username = cls.last_command.split()[1]
             cls.password = cls.last_command.split()[2]
         return server_response
@@ -34,11 +37,12 @@ class Client:
             s.connect((self.host, self.port))
 
             while True:
-                command = input('Send to the server: ')
-                CommandManager.send(command, s)
+                command = input('Send to the server: ').strip()
+                if command:
+                    CommandManager.send(command, s)
 
-                if command == 'stop':
-                    break
+                    if command == 'stop':
+                        break
 
-                server_response = CommandManager.receive(s)
-                print(f"{server_response}")
+                    server_response = CommandManager.receive(s)
+                    print(f"{server_response}")
